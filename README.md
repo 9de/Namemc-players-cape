@@ -29,6 +29,6 @@ Open the console by pressing : Ctrl + shift + i
 
 4 - And Done !
  
-## - ⚠ Warn Warning
+## - ⚠ Warning
 
 - **I am not responsible for what you do in script**
