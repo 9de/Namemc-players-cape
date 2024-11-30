@@ -1,42 +1,43 @@
-let players = []
-$("body > main > div > div:nth-child(2) > div > div > div.card-body.player-list.py-2").each(function() {
- players.push($(this).text().replace(/^\s+|\s+$/gm,''));  
-})
+function scrapeAndDownload() {
+    try {
+        // Get all player elements and extract text
+        const players = [];
+        const elements = document.querySelectorAll('body > main > div > div:nth-child(2) > div > div > div.card-body.player-list.py-2');
+        
+        elements.forEach(element => {
+            const text = element.textContent
+                .replace(/^\s+|\s+$/gm, '')  // Remove leading/trailing whitespace
+                .replace(/\s+/g, ' ')        // Normalize spaces
+                .trim();                     // Final trim
+            
+            if (text) {
+                players.push(text);
+            }
+        });
 
-const pla = players.join("\n")
-fallbackCopyTextToClipboard(pla)
+        if (players.length === 0) {
+            console.warn('No data found to download');
+            return;
+        }
 
-function fallbackCopyTextToClipboard(text) {
-  var textArea = document.createElement("textarea");
-  textArea.value = text;
-  
-  // Avoid scrolling to bottom
-  textArea.style.top = "0";
-  textArea.style.left = "0";
-  textArea.style.position = "fixed";
-
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-
-  try {
-    var successful = document.execCommand('copy');
-    var msg = successful ? 'successful' : 'unsuccessful';
-    console.log('Fallback: Copying text command was ' + msg);
-  } catch (err) {
-    console.error('Fallback: Oops, unable to copy', err);
-  }
-
-  document.body.removeChild(textArea);
+        // Create blob and download
+        const blob = new Blob([players.join('\n')], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `scraped_data_${timestamp}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log(`Downloaded ${players.length} items`);
+    } catch (error) {
+        console.error('Scraping failed:', error);
+    }
 }
-function copyTextToClipboard(text) {
-  if (!navigator.clipboard) {
-    fallbackCopyTextToClipboard(text);
-    return;
-  }
-  navigator.clipboard.writeText(text).then(function() {
-    console.log('Async: Copying to clipboard was successful!');
-  }, function(err) {
-    console.error('Async: Could not copy text: ', err);
-  });
-}
+
+// Run the function
+scrapeAndDownload();
